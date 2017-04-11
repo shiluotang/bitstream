@@ -6,30 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 
-/**
- *
- * As it says the "bit order".
- * <p>
- * 0x2 = 0b00000010
- * </p>
- *
- * @author samuel
- *
- */
-enum BitOrder {
-
-    /**
-     * The first bit is least significant bit, the last is the most significant
-     * bit.
-     */
-    LM,
-
-    /**
-     * The first bit is most significant bit, the last is the least significant
-     * bit.
-     */
-    ML,
-}
 
 /**
  * Read raw bits as stream.
@@ -38,7 +14,7 @@ enum BitOrder {
  * @version Thu Mar 30 22:02:11 CST 2017
  * @since 1.0
  */
-class BitInputStream extends FilterInputStream implements BitInput {
+public class BitInputStream extends FilterInputStream implements BitInput {
 
     private static final int[] SHIFTS = {
             7, 6, 5, 4, 3, 2, 1, 0
@@ -51,6 +27,12 @@ class BitInputStream extends FilterInputStream implements BitInput {
         private int _M_size;
 
         private int _M_pos;
+
+        private int _M_markedPos;
+
+        private int _M_markedSize;
+
+        private int _M_markedFrame;
 
         public ByteFrame() {
             _M_frame = 0;
@@ -82,6 +64,18 @@ class BitInputStream extends FilterInputStream implements BitInput {
 
         public boolean empty() {
             return _M_pos >= _M_size;
+        }
+
+        public void mark() {
+            _M_markedPos = _M_pos;
+            _M_markedSize = _M_size;
+            _M_markedFrame = _M_frame;
+        }
+
+        public void reset() {
+            _M_pos = _M_markedPos;
+            _M_size = _M_markedSize;
+            _M_frame = _M_markedFrame;
         }
     }
 
@@ -280,5 +274,17 @@ class BitInputStream extends FilterInputStream implements BitInput {
         int sign = readBit();
         BigInteger integer = readUBigInteger(bits - 1);
         return sign == 1 ? integer.negate() : integer;
+    }
+
+    @Override
+    public void mark(int readlimit) {
+        super.mark();
+        _M_buffer.mark();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        _M_buffer.reset();
     }
 }
