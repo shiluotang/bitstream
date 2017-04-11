@@ -177,5 +177,5 @@ public interface BitInput {
      * @param bits The number of bits to ignore.
      * @exception IOException If I/O error happens.
      */
-    void skip(int bits) throws IOException;
+    void skipBits(long bits) throws IOException;
 }
