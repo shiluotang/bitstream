@@ -6,15 +6,13 @@ import java.math.BigInteger;
 /**
  * For reading raw bit as numbers and string.
  *
- * <p>
- * There're three types of number.
+ * <p>There're three types of number.</p>
  * <ol>
  * <li>2 's complement number.(补码)  use readXXX(int) methods</li>
  * <li>unsigned number. use readUXXX(int) methods</li>
  * <li>sign magnitude number. it equals a sign bit following unsigned number
  * bits. use readSXXX(int) methods</li>
  * </ol>
- * </p>
  *
  * @author <a href="mailto:shengquangang2015@163.com">Quangang Sheng</a>
  */
