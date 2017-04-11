@@ -77,11 +77,11 @@ public class BitInputStream extends FilterInputStream implements BitInput {
             _M_size = _M_markedSize;
             _M_frame = _M_markedFrame;
         }
-        
+
         public int available() {
             return availableBits() / 8;
         }
-        
+
         public int availableBits() {
             return empty() ? 0 : _M_size - _M_pos;
         }
@@ -281,16 +281,16 @@ public class BitInputStream extends FilterInputStream implements BitInput {
         super.reset();
         _M_buffer.reset();
     }
-    
+
     @Override
     public int available() throws IOException {
         return super.available() + _M_buffer.available();
     }
-    
+
     public int availableBits() throws IOException {
         return super.available() * 8 + _M_buffer.availableBits();
     }
-    
+
     public void markBits(final int readlimitbits) {
         mark((readlimitbits + 8 - 1) / 8);
     }
