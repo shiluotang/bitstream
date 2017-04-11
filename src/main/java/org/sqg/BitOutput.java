@@ -25,9 +25,6 @@ public interface BitOutput {
 
     void writeUInt(long value, int bits) throws IOException;
 
-    /**
-     * FIXME This may not be practical?
-     */
     void writeULong(long value, int bits) throws IOException;
 
     void writeUBigInteger(BigInteger value, int bits) throws IOException;
