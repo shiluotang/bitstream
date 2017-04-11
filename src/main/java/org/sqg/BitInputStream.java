@@ -6,30 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 
-/**
- *
- * As it says the "bit order".
- * <p>
- * 0x2 = 0b00000010
- * </p>
- *
- * @author samuel
- *
- */
-enum BitOrder {
-
-    /**
-     * The first bit is least significant bit, the last is the most significant
-     * bit.
-     */
-    LM,
-
-    /**
-     * The first bit is most significant bit, the last is the least significant
-     * bit.
-     */
-    ML,
-}
 
 /**
  * Read raw bits as stream.
@@ -38,7 +14,7 @@ enum BitOrder {
  * @version Thu Mar 30 22:02:11 CST 2017
  * @since 1.0
  */
-class BitInputStream extends FilterInputStream implements BitInput {
+public class BitInputStream extends FilterInputStream implements BitInput {
 
     private static final int[] SHIFTS = {
             7, 6, 5, 4, 3, 2, 1, 0
@@ -51,6 +27,12 @@ class BitInputStream extends FilterInputStream implements BitInput {
         private int _M_size;
 
         private int _M_pos;
+
+        private int _M_markedFrame;
+
+        private int _M_markedSize;
+
+        private int _M_markedPos;
 
         public ByteFrame() {
             _M_frame = 0;
@@ -83,31 +65,37 @@ class BitInputStream extends FilterInputStream implements BitInput {
         public boolean empty() {
             return _M_pos >= _M_size;
         }
+
+        public void mark() {
+            _M_markedPos = _M_pos;
+            _M_markedSize = _M_size;
+            _M_markedFrame = _M_frame;
+        }
+
+        public void reset() {
+            _M_pos = _M_markedPos;
+            _M_size = _M_markedSize;
+            _M_frame = _M_markedFrame;
+        }
+
+        public int available() {
+            return availableBits() / 8;
+        }
+
+        public int availableBits() {
+            return empty() ? 0 : _M_size - _M_pos;
+        }
     }
 
     private ByteFrame _M_buffer;
 
-    private int _M_offsetBits;
-
     public BitInputStream(final InputStream in) {
-        this(in, 0);
-    }
-
-    public BitInputStream(final InputStream in, final int offsetBits) {
         super(in);
-        if (offsetBits < 0)
-            throw new IllegalArgumentException("offsetBits has to be no less than zero");
         _M_buffer = new ByteFrame();
-        _M_offsetBits = offsetBits;
     }
 
     @Override
     public int readBit() throws IOException {
-        // skip offsetBits;
-        while (_M_offsetBits > 0) {
-            _M_buffer.readBit();
-            --_M_offsetBits;
-        }
         return _M_buffer.readBit();
     }
 
@@ -145,7 +133,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public long readLong(int bits) throws IOException {
+    public long readLong(final int bits) throws IOException {
         if (bits > Long.SIZE || bits < 2)
             throw new IllegalArgumentException();
         final int shift = 64 - bits;
@@ -166,7 +154,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public BigInteger readBigInteger(int bits) throws IOException {
+    public BigInteger readBigInteger(final int bits) throws IOException {
         int numOfBytes = (bits + Byte.SIZE - 1) / Byte.SIZE;
         int remainingBits = bits % Byte.SIZE;
         byte[] bytes = new byte[numOfBytes];
@@ -198,7 +186,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public long readUInt(int bits) throws IOException {
+    public long readUInt(final int bits) throws IOException {
         long value = 0;
         for (int i = 1; i <= bits; ++i)
             value |= readBit() << (bits - i);
@@ -206,7 +194,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public BigInteger readUBigInteger(int bits) throws IOException {
+    public BigInteger readUBigInteger(final int bits) throws IOException {
         if (bits < 1)
             throw new IllegalArgumentException();
         int numOfBytes = (bits + Byte.SIZE - 1) / Byte.SIZE;
@@ -223,20 +211,20 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public String readUtf8(int bits) throws IOException {
+    public String readUtf8(final int bits) throws IOException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public void skip(int bits) throws IOException {
+    public void skipBits(final long bits) throws IOException {
         int n = 0;
-        for (int i = 0; i < bits && n != -1; ++i)
+        for (long i = 0; i < bits && n != -1; ++i)
             n = readBit();
     }
 
     @Override
-    public byte readSByte(int bits) throws IOException {
+    public byte readSByte(final int bits) throws IOException {
         if (bits > Byte.SIZE || bits < 2)
             throw new IllegalArgumentException();
         int sign = readBit();
@@ -245,7 +233,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public short readSShort(int bits) throws IOException {
+    public short readSShort(final int bits) throws IOException {
         if (bits > Short.SIZE || bits < 2)
             throw new IllegalArgumentException();
         int sign = readBit();
@@ -254,7 +242,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public int readSInt(int bits) throws IOException {
+    public int readSInt(final int bits) throws IOException {
         if (bits > Integer.SIZE || bits < 2)
             throw new IllegalArgumentException();
         int sign = readBit();
@@ -263,7 +251,7 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public long readSLong(int bits) throws IOException {
+    public long readSLong(final int bits) throws IOException {
         if (bits > Long.SIZE || bits < 2)
             throw new IllegalArgumentException();
         int sign = readBit();
@@ -274,11 +262,36 @@ class BitInputStream extends FilterInputStream implements BitInput {
     }
 
     @Override
-    public BigInteger readSBigInteger(int bits) throws IOException {
+    public BigInteger readSBigInteger(final int bits) throws IOException {
         if (bits < 2)
             throw new IllegalArgumentException();
         int sign = readBit();
         BigInteger integer = readUBigInteger(bits - 1);
         return sign == 1 ? integer.negate() : integer;
+    }
+
+    @Override
+    public void mark(final int readlimit) {
+        super.mark(readlimit + 1);
+        _M_buffer.mark();
+    }
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        _M_buffer.reset();
+    }
+
+    @Override
+    public int available() throws IOException {
+        return super.available() + _M_buffer.available();
+    }
+
+    public int availableBits() throws IOException {
+        return super.available() * 8 + _M_buffer.availableBits();
+    }
+
+    public void markBits(final int readlimitbits) {
+        mark((readlimitbits + 8 - 1) / 8);
     }
 }
