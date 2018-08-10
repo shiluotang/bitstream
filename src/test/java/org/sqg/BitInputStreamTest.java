@@ -318,7 +318,7 @@ public class BitInputStreamTest {
             Assert.assertEquals(BigInteger.valueOf(VALUE & 0xf), is.readUBigInteger(4));
         }
     }
-    
+
     @Test
     public void testSkipBits() throws IOException {
         // 0b10001010
@@ -341,7 +341,7 @@ public class BitInputStreamTest {
             Assert.assertEquals(VALUE & 0x7, is.readByte(3));
         }
     }
-    
+
     @Test
     public void testMark() throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(Byte.SIZE / 8 * 8);
