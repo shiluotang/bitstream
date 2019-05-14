@@ -174,7 +174,7 @@ public class BitInputStream extends FilterInputStream implements BitInput {
         short value = 0;
         for (int i = 1; i <= bits; ++i)
             value |= readBit() << (bits - i);
-        return value;
+        return (short) (value & 0xff);
     }
 
     @Override
@@ -182,7 +182,7 @@ public class BitInputStream extends FilterInputStream implements BitInput {
         int value = 0;
         for (int i = 1; i <= bits; ++i)
             value |= readBit() << (bits - i);
-        return value;
+        return value & 0xffff;
     }
 
     @Override
@@ -190,7 +190,7 @@ public class BitInputStream extends FilterInputStream implements BitInput {
         long value = 0;
         for (int i = 1; i <= bits; ++i)
             value |= readBit() << (bits - i);
-        return value;
+        return value & 0xffffffffL;
     }
 
     @Override
