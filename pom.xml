@@ -71,7 +71,7 @@
             </plugin>
             -->
             <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
+                <groupId>com.manamind.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>1.0.0</version>
             </plugin>
