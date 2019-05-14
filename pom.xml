@@ -86,11 +86,12 @@
             <plugin>
                 <groupId>com.manamind.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0-m5.1</version>
+                <version>1.0.0</version>
             </plugin>
         </plugins>
     </build>
 
+    <!--
     <distributionManagement>
         <snapshotRepository>
             <id>local-archiva-snapshots</id>
@@ -101,4 +102,5 @@
             <url>http://localhost:8080/repository/internal</url>
         </repository>
     </distributionManagement>
+    -->
 </project>
