@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -191,21 +193,29 @@ public class BitInputStreamTest {
     public void testUInt() throws IOException {
         // 0b10001010
         final byte VALUE = (byte) (138 & 0xff);
-        ByteBuffer buffer = ByteBuffer.allocate(Byte.SIZE / 8);
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.SIZE / 8);
         buffer.order(ByteOrder.BIG_ENDIAN);
-        buffer.put(VALUE);
+        buffer.putInt(VALUE & 0xff);
         buffer.flip();
         byte[] data = buffer.array();
         try (BitInputStream is = new BitInputStream(new ByteArrayInputStream(data))) {
+            is.skipBits(32 - 8);
             Assert.assertEquals(VALUE & 0xff, is.readUInt(8));
         }
         try (BitInputStream is = new BitInputStream(new ByteArrayInputStream(data))) {
+            is.skipBits(32 - 8);
             is.skipBits(1);
             Assert.assertEquals(VALUE & 0x7f, is.readUInt(7));
         }
         try (BitInputStream is = new BitInputStream(new ByteArrayInputStream(data))) {
+            is.skipBits(32 - 8);
             is.skipBits(4);
             Assert.assertEquals(VALUE & 0xf, is.readUInt(4));
+        }
+        buffer.rewind();
+        buffer.putInt(-1);
+        try (BitInputStream is = new BitInputStream(new ByteArrayInputStream(data))) {
+            Assert.assertEquals(-1 & 0xffffffffL, is.readUInt(32));
         }
     }
 
@@ -318,7 +328,7 @@ public class BitInputStreamTest {
             Assert.assertEquals(BigInteger.valueOf(VALUE & 0xf), is.readUBigInteger(4));
         }
     }
-    
+
     @Test
     public void testSkipBits() throws IOException {
         // 0b10001010
@@ -341,7 +351,7 @@ public class BitInputStreamTest {
             Assert.assertEquals(VALUE & 0x7, is.readByte(3));
         }
     }
-    
+
     @Test
     public void testMark() throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(Byte.SIZE / 8 * 8);
