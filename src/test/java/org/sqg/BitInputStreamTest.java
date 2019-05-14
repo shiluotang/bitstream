@@ -6,8 +6,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.junit.Assert;
 import org.junit.Test;
 
